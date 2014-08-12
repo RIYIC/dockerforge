@@ -1,0 +1,44 @@
+dancer (1.31)
+YAML
+
+BACKEND PERL
+- Inicialmente non é público, as peticións dos clientes teñen que pasar polo frontend, que é o que se ocupará da autenticación das mesmas, e da adecuación para enviar ao backend
+- Internamente se usuaría para montar as imaxenes escollidas polos clientes, e arrancar os dockers nos proveedores soportados (e nos anfitrións que haxa rexistrados)
+
+
+RUTAS:
+GET /dockers -> listar dockers
+GET /docker/:id -> obtener docker con id <id>
+POST /docker -> crear docker (ASINCRONA)
+ - returns status: 202 Accepted, Location: /queue/<job_id> (http://restcookbook.com/Resources/asynchroneous-operations/)
+ - GET /queue/:job_id : devolve o estado do traballo asincrono e os resultados que produxo se os hai
+ Se aconsella que se o traballo e de creacion devolva un status 303 (see also) e un Location: <url ao novo recurso creado>
+DELETE /docker/:id -> borra un container identificado polo id <id>
+
+GET /images -> lista as imaxenes dispoñibles que ten UN DETERMINADO CLIENTE
+GET /image/:id -> obten os detalles da imaxen co id :id
+POST /image -> Crea a imaxen especificada e subea a todos os anfis (ou so aos do cliente) (ASINCRONA)
+DELETE /image/:id -> Borrar unha imaxen especificada
+
+GET /hosts -> lista os hosts dispoñibles
+GET /host/:id -> obten os detalles dun determinado host
+POST /host -> Da de alta na bbdd un novo host (para un determinado cliente)
+DELETE /host/:id -> Elimina da bbdd un host
+
+
+Dockerforge necesita unha bbdd con:
+
+- usuario: usuario da api, trataremos de agregar un usuario por cliente para que nun futuro  se poida abrir publicamente a api, e se poidan validar as credenciales contra esta taboa. Esta entidade tamén permite relacionar todas as pertenencias dun determinado cliente, para por exemplo dalas de baixa todas xuntas, ou antes de executar algo sobre unha delas, se poida validar se pertenece ao usuario co que se está facendo as peticións (vamos, chequear os permisos)
+
+- dockers creados, detalles, e en que anfitrion se aloxan (quen determina en que anfitrion se aloxa un docker¿?)
+ 	- pode vir determinado polo panel, cada cliente tería contratado N anfitrions (vps en digitalocean, dedicado de ovh ...) e indicaría donde lanzar o container (como fai orchad)
+	- pode determinalo un 'estratega' en función dos anfitrións que teñamos internamente (os anfitrions non se revenderían directamente ao 
+	- ¿mix?: que o cliente rexistre os anfitrions que queira, e cando lance un docker ten que indicar en que anfitrion dos seus usar
+
+- imaxenes dispoñibles en cada anfitrion (deberían estar un registro central noso, a falta de un podemos usar o de docker directamente (https://registry.hub.docker.com/) SEMPRE QUE POIDAN SER PUBLICAS. Para as privadas esta quay.io)
+
+- anfitrions e detalles de conexión ca api de docker en cada un deles 
+
+- lista de tarefas asíncronas (queue), co estado, e resultados da execucion do job
+
+
