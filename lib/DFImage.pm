@@ -1,9 +1,9 @@
 package DFImage;
 
 use strict;
-use parent qw(DFBase);
+use Eixo::Base::Clase;
 
-use Eixo::Docker::Api;
+use parent qw(DFBase);
 
 has(
     Id => undef, # docker Id
@@ -16,6 +16,10 @@ has(
 sub HAS_ONE {
 
     user => 'DFUser'
+}
+
+sub build{
+    
 }
 
 1;
