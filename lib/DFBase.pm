@@ -11,9 +11,17 @@ has(
     _id => undef
 );
 
-# sub _id {
-#     $_[0]->{_id};
-# }
+sub to_hash {
+
+    my $res = {};
+
+    while(my ($key, $value) = each(%{$_[0]})){
+        $res->{$key} = $value unless($key =~ /^\_/);
+    }
+
+    $res;
+}
+
 
 sub initialize {
     my $self = $_[0];
@@ -58,19 +66,8 @@ sub initialize {
                 my ($self, %args) = @_;
 
                 $obj_class->find(
-                    {'_id_'.$class => $self->_id, %args}
+                    ('_id_'.$class => $self->_id, %args)
                 );
-
-                # my $cursor = $obj_class->find(
-                #     {'_id_'.$class => $self->_id, %args}
-                # );
-
-                # my @resp;
-                # while(my $obj = $cursor->next() ){
-                #     push @resp, bless($obj, $obj_class);
-                # }
-
-                # return @resp;
 
             }
         }
@@ -84,15 +81,18 @@ sub HAS_MANY {}
 # class methods
 sub load {
     my ($class, %args) = @_;
-    my $cursor = &__collection($class)->find(\%args)->limit(1);
+    # my $cursor = &__collection($class)->find(\%args)->limit(1);
 
-    my $doc =  $cursor->next;
-    # print Dumper($doc);
+    # my $doc =  $cursor->next;
+    # # print Dumper($doc);
 
-    my $e = ($doc)? bless($doc, $class) : undef;
-    # print Dumper($e); use Data::Dumper;
+    # my $e = ($doc)? $class->new(%$doc) : undef;
+    # # print Dumper($e); use Data::Dumper;
+    # return $e;
     
-    return $e;
+    my $doc = &__collection($class)->find_one(\%args);
+
+    ($doc)? $class->new(%$doc) : undef;
 }
 
 sub find {
@@ -101,7 +101,7 @@ sub find {
 
     my $cursor = &__collection($class)->find(\%args);
 
-    map {bless($_, $class)} $cursor->all;
+    map {$class->new(%$_)} $cursor->all;
 }
 
 sub save {
@@ -122,18 +122,15 @@ sub save {
     }
     else{
 
-        &__collection(ref($self))->insert($self, {upsert => 1});
+        my $oid = &__collection(ref($self))->insert($self, {upsert => 1});
+
+        $self->_id($oid);
     }
 
     $self;
 
 }
 
-# sub insert {
-
-# }
-
-# sub update {}
 
 sub remove {
 
