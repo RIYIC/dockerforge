@@ -1,13 +1,20 @@
 package DFHost;
 
 use strict;
+use Eixo::Base::Clase;
 use parent qw(DFBase);
 
 has(
-    api_url => undef,
-    hostname => undef,
+    ApiUrl => undef,
+    Hostname => undef,
+
+    _id_DFUser => undef,
     
 );
+
+sub HAS_ONE {
+    user => 'DFUser'
+}
 
 
 sub createContainer {
@@ -17,23 +24,23 @@ sub createContainer {
     # validar parametros necesarios
 
     # validar que exista imagen, e sexa publica ou do mesmo usuario que o host
-    $image_obj = DFImage->load($user, image => $config{image});
+    my $image_obj = DFImage->load($user, image => $config{image});
 
     # validar recursos disponibles no host
 
     # se non existe a imaxen no host, descargala
-    my $client = Eixo::Docker::Api->new($self->api_url);
-    $cliente->images->create();
+    my $client = Eixo::Docker::Api->new($self->ApiUrl);
+    $client->images->create();
 
     ## crear docker en host
-    my $container = $client->containers->create(%config);
+    my $h = $client->containers->create(%config);
 
     # almacenar en bd
-    bless($container, DFContainer);
-
-    $container->user($user_obj);
+    my $container = DFContainer->new(%$h);
+    $container->user($user);
     $container->image($image_obj);
     $container->host($self);
+
     $container->save();
 
     $container;
@@ -42,7 +49,7 @@ sub createContainer {
 sub deleteContainer{
     my ($self, $container) = @_;
 
-    my $client = Eixo::Docker::Api->new($self->api_url);
+    my $client = Eixo::Docker::Api->new($self->ApiUrl);
 
     my $c = $client->containers->get(Id => $container->Id);
 
