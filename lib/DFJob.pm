@@ -9,9 +9,9 @@ has(
     task => '',
     params => {},
     results => {},
-    creation_timestamp => undef,
-    start_timestamp => undef,
-    termination_timestamp => undef,
+    creation_timestamp => 0,
+    start_timestamp => 0,
+    termination_timestamp => 0,
     running => 0,
     done => 0,
 
@@ -33,6 +33,60 @@ sub getPendingJob{
     });
 
     ($doc)? $class->new(%$doc) : undef;
+
+}
+
+#
+# si as tareas as montamos como clases externas
+#
+
+# sub runTask{
+#     my $self = $_[0];
+
+#     my $task_class = 'Task::'.$self->task;
+#     my $results = {};
+
+#     eval{
+#         require $task_class.'.pm'
+#     };
+#     if($@){
+
+#         $results = {error => "Task $task_class not exists"};
+#     }
+#     else{
+#         $results = $task_class->new(params => $self->params)->run;
+#     }
+
+#     $self->results($results);
+#     $self->termination_timestamp(time());
+#     $self->done(1);
+#     $self->save;
+# }
+
+
+#
+# Si as tareas son metodos de DFUser
+#
+
+sub runTask {
+    my $self = $_[0];
+
+    my $method = $self->task;
+
+    my $res = {};
+
+    if($self->user->can($method)){
+        $res = $self->user->$method(%{$self->params});
+    }
+    else{
+        $res->{error} = 'Task '. $self->task. ' not exists';
+    }
+
+    $self->results($res);
+    $self->termination_timestamp(time());
+    $self->done(1);
+    $self->save;
+
 
 }
 
