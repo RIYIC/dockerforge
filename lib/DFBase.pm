@@ -81,15 +81,11 @@ sub HAS_MANY {}
 # class methods
 sub load {
     my ($class, %args) = @_;
-    # my $cursor = &__collection($class)->find(\%args)->limit(1);
-
-    # my $doc =  $cursor->next;
-    # # print Dumper($doc);
-
-    # my $e = ($doc)? $class->new(%$doc) : undef;
-    # # print Dumper($e); use Data::Dumper;
-    # return $e;
     
+    if($args{_id}){
+        $args{_id} = MongoDB::OID->new($args{_id}) unless(ref($args{_id}) eq 'MongoDB::OID');
+    }
+
     my $doc = &__collection($class)->find_one(\%args);
 
     ($doc)? $class->new(%$doc) : undef;
@@ -98,7 +94,10 @@ sub load {
 sub find {
 
     my ($class, %args) = @_;
-
+    
+    if($args{_id}){
+        $args{_id} = MongoDB::OID->new($args{_id}) unless(ref($args{_id}) eq 'MongoDB::OID');
+    }
     my $cursor = &__collection($class)->find(\%args);
 
     map {$class->new(%$_)} $cursor->all;
