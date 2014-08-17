@@ -6,9 +6,11 @@ use parent qw(DFBase);
 use DFHost;
 use DFImage;
 use DFJob;
+use utils;
 
 has(
-    UserId => undef,    
+    Username => undef,
+    Password => &utils::random_key,    
 );
 
 
@@ -49,16 +51,35 @@ sub createHost{
     DFHost->new(%args,_id_DFUser => $self->_id)->save;
 }
 
+sub createContainer {
+    sleep(10);
+    return {Id => 'xxxx'};
+
+
+    # my $container = DFHost->load()->createContainer;
+
+    # $container->to_hash;
+
+}
+
+sub buildImage {
+    sleep(10);
+    return {Id => 'miimage'};
+
+    #DFImage->new()->build;
+}
 
 sub createJob {
     my ($self, $task, $params)  = @_;
 
-    DFJob->new(
+    my $job = DFJob->new(
         task => $task, 
         params => $params,
         creation_timestamp => time(),
         _id_DFUser => $self->_id
     )->save;
+
+    $job->_id;
 }
 
 sub testJob {sleep(int(rand(10)))}
