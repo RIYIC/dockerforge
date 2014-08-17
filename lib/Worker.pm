@@ -38,15 +38,8 @@ sub run {
 
 sub execJob {
     my ($self, $job) = @_;
-    my $user = DFUser->load(_id => $job->_id_DFUser);
-    my $method = $job->task;
-    
-    my $results = $user->$method(%{$job->params});
 
-    $job->results($results);
-    $job->termination_timestamp(time());
-    $job->done(1);
-    $job->save;
+    $job->runTask;
 }
 
 sub stop {
