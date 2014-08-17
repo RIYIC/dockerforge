@@ -1,21 +1,25 @@
 use strict;
+use Dancer;
 use MongoDB;
 use DFUser;
 use DFHost;
 use Data::Dumper;
 
 # initialize database
-
 my $client     = MongoDB::MongoClient->new(host => 'mongo', port => 27017);
 my $db = $client->get_database("dockerforge");
-$db->drop if($ARGV[0] =~ /purge/i);
+if($ARGV[0] =~ /purge/i){
+
+    map{$db->get_collection($_)->drop} $db->collection_names();
+    $db->drop;
+}
 
 my $collection = $db->get_collection('DFUsers');
 # create index
-$collection->ensure_index( { UserId => 1 }, {unique => 1});
+$collection->ensure_index( { Username => 1 }, {unique => 1});
 
 # main user
-my $user = DFUser->load(UserId => 'root') || DFUser->new(UserId => 'root')->save;
+my $user = DFUser->load(Username => 'root') || DFUser->new(Username => 'root')->save;
 
 
 my $collection = $db->get_collection('DFHosts');
