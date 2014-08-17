@@ -6,28 +6,24 @@ use warnings;
 use dockerforge;
 use Dancer::Test;
 
-route_exists [GET => '/'], 'a route handler is defined for /';
-response_status_is ['GET' => '/'], 403, 'response status is 403 because user is not authorized /';
+# route_exists [GET => '/'], 'a route handler is defined for /';
+# response_status_is ['GET' => '/'], 500, 'response status is 403 because user is not authorized /';
 
 
 foreach my $entity (qw(
-    user
-    image
-    container
-    host)){
+    users
+    images
+    containers
+    hosts)){
 
     foreach my $action (qw(GET POST DELETE)){
-        
-        if($action eq 'GET'){
-            route_exists [$action => "/$entity/:id"], "a route handler is defined for $action => /$entity/:id";
-            route_exists [$action => '/'.$entity.'s'], "a route handler is defined for $action => /$entity".'s';
-        }
-        elsif($action eq 'DELETE'){
-            route_exists [$action => "/$entity/:id"], "a route handler is defined for $action => /$entity/:id";  
-        }
-        else{
 
-            route_exists [$action => "/$entity"], "a route handler is defined for $action => /$entity";
+        if(grep {$_ eq $action} (qw(GET DELETE PATCH))){
+            route_exists [$action => "/v1/$entity/:id"], "a route handler is defined for $action => /v1/$entity/:id";
+        }
+
+        if(grep {$_ eq $action} (qw(GET POST))){
+            route_exists [$action => "/v1/$entity"], "a route handler is defined for $action => /v1/$entity";            
         }
     }
 }
