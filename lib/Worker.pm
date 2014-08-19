@@ -1,16 +1,18 @@
 package Worker;
 
 use strict;
+use DFJob;
 
 my $can_use_threads = eval 'use threads; 1';
 
 use Eixo::Base::Clase;
 use parent qw(Eixo::Base::Clase);
 
+
 my $MAX_PARALLEL_JOBS = 4;
 
 has(
-    jobClass => 'undef',
+    jobClass => undef,
     lap => 0
 );
 
