@@ -34,6 +34,8 @@ sub initialize {
     my %has_one_relations = $self->HAS_ONE();
     while(my ($attribute, $obj_class) = each(%has_one_relations)){
 
+        require "$obj_class.pm";
+
         unless(defined(&{$class . '::' . $attribute})){
 
             *{$class . '::' . $attribute} = sub {
@@ -57,6 +59,8 @@ sub initialize {
     my %has_many_relations = $self->HAS_MANY();
 
     while(my ($attribute, $obj_class) = each(%has_many_relations)){
+
+        require "$obj_class.pm";
 
         unless(defined(&{$class . '::' . $attribute})){
 
@@ -94,7 +98,7 @@ sub load {
 sub find {
 
     my ($class, %args) = @_;
-    
+
     if($args{_id}){
         $args{_id} = MongoDB::OID->new($args{_id}) unless(ref($args{_id}) eq 'MongoDB::OID');
     }
